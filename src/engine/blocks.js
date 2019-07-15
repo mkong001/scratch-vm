@@ -341,6 +341,7 @@ class Blocks {
                 newInput: e.newInputName,
                 newCoordinate: e.newCoordinate
             });
+            //console.log("vm blocks move case is called: "); //test logging
             break;
         case 'dragOutside':
             this.runtime.emitBlockDragUpdate(e.isOutside);
@@ -352,7 +353,10 @@ class Blocks {
             if (e.isOutside) {
                 const newBlocks = adapter(e);
                 this.runtime.emitBlockEndDrag(newBlocks, e.blockId);
+                console.log("vm engine blocks endDrag drag block onto another sprite"); //test logging
             }
+            console.log("vm engine blocks endDrag case is called: " + this._blocks[e.blockId].opcode); //test logging
+            console.log(this._blocks[e.blockId] + " " + this.blockToXML(e.blockId)); //test logging
             break;
         case 'delete':
             // Don't accept delete events for missing blocks,
@@ -366,6 +370,7 @@ class Blocks {
                 this.runtime.quietGlow(e.blockId);
             }
             this.deleteBlock(e.blockId);
+            //console.log("vm delete case is called: " + e.blockId); //test logging
             break;
         case 'var_create':
             // Check if the variable being created is global or local
@@ -395,6 +400,7 @@ class Blocks {
                 stage.createVariable(e.varId, e.varName, e.varType, e.isCloud);
                 this.emitProjectChanged();
             }
+            console.log("vm engine blocks var_create is called: " + e.varName); //test logging
             break;
         case 'var_rename':
             if (editingTarget && editingTarget.variables.hasOwnProperty(e.varId)) {
@@ -414,12 +420,14 @@ class Blocks {
                 }
             }
             this.emitProjectChanged();
+            console.log("vm engine blocks var_rename is called: " + e.newName); //test logging
             break;
         case 'var_delete': {
             const target = (editingTarget && editingTarget.variables.hasOwnProperty(e.varId)) ?
                 editingTarget : stage;
             target.deleteVariable(e.varId);
             this.emitProjectChanged();
+            console.log("vm engine blocks var_delete is called: " + e.varName); //test logging
             break;
         }
         case 'comment_create':
@@ -441,6 +449,7 @@ class Blocks {
                 }
             }
             this.emitProjectChanged();
+            console.log("vm engine comment_create is called: " + e.text); //test logging
             break;
         case 'comment_change':
             if (this.runtime.getEditingTarget()) {
@@ -453,13 +462,16 @@ class Blocks {
                 const change = e.newContents_;
                 if (change.hasOwnProperty('minimized')) {
                     comment.minimized = change.minimized;
+                    console.log("vm engine comment_change is called and comment is minimized"); //test logging
                 }
                 if (change.hasOwnProperty('width') && change.hasOwnProperty('height')){
                     comment.width = change.width;
                     comment.height = change.height;
+                    console.log("vm engine comment_change is called and comments' size is changed"); //test logging
                 }
                 if (change.hasOwnProperty('text')) {
                     comment.text = change.text;
+                    console.log("vm engine comment_change is called and comment text is edited"); //test logging
                 }
                 this.emitProjectChanged();
             }
@@ -477,6 +489,7 @@ class Blocks {
                 comment.y = newCoord.y;
 
                 this.emitProjectChanged();
+                console.log("vm engine comment_move is called and comment is moved"); //test logging
             }
             break;
         case 'comment_delete':
@@ -500,6 +513,7 @@ class Blocks {
                 }
 
                 this.emitProjectChanged();
+                console.log("vm engine comment_delete is called and comment is deleted: " + e.commentId); //test logging
             }
             break;
         }
@@ -585,6 +599,7 @@ class Blocks {
                 if (variable) {
                     block.fields[args.name].value = variable.name;
                     block.fields[args.name].id = args.value;
+                    console.log("vm engine block changeBlock is called - variable"); //test logging
                 }
             } else {
                 // Changing the value in a dropdown
@@ -600,6 +615,7 @@ class Blocks {
                         this._blocks[block.parent].fields.PROPERTY.value = 'x position';
                     }
                     this.runtime.requestBlocksUpdate();
+                    //console.log("vm engine block changeBlock is called - sensing_of_object_menu"); //test logging
                 }
 
                 const flyoutBlock = block.shadow && block.parent ? this._blocks[block.parent] : block;
@@ -608,6 +624,7 @@ class Blocks {
                         id: flyoutBlock.id,
                         params: this._getBlockParams(flyoutBlock)
                     }));
+                    //console.log("vm engine block changeBlock is called - flyoutBlock.isMonitored"); //test logging
                 }
             }
             break;
@@ -724,11 +741,13 @@ class Blocks {
             }
             this._blocks[e.id].parent = null;
             didChange = true;
+            //console.log("vm engine blocks moveBlock is called - remove from any old parent"); //test logging
         }
 
         // Is this block a top-level block?
         if (typeof e.newParent === 'undefined') {
             this._addScript(e.id);
+            //console.log("vm engine blocks moveBlock is called - this block is a top-level block"); //test logging
         } else {
             // Remove script, if one exists.
             this._deleteScript(e.id);
@@ -757,6 +776,7 @@ class Blocks {
             }
             this._blocks[e.id].parent = e.newParent;
             didChange = true;
+            //console.log("vm engine blocks moveBLock is called - move to the new parent block"); //test logging
         }
         this.resetCache();
 
@@ -806,6 +826,7 @@ class Blocks {
         // Delete children
         if (block.next !== null) {
             this.deleteBlock(block.next);
+            //console.log("vm engine blocks deleteBlock is called - children blocks are deleted"); //test logging
         }
 
         // Delete inputs (including branches)
@@ -829,6 +850,7 @@ class Blocks {
 
         this.resetCache();
         this.emitProjectChanged();
+        //console.log("vm engine blocks deleteBlock is called - block itself is deleted: " + block); //test logging
     }
 
     /**

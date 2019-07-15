@@ -170,6 +170,7 @@ class VirtualMachine extends EventEmitter {
      */
     start () {
         this.runtime.start();
+        // call init script for logging here?
     }
 
     /**
@@ -952,6 +953,7 @@ class VirtualMachine extends EventEmitter {
      * @returns {?Promise} - a promise that resolves when the backdrop has been added
      */
     addBackdrop (md5ext, backdropObject) {
+        console.log("scratch-vm src virtual-machine addBackdrop is called"); //test logging
         return loadCostume(md5ext, backdropObject, this.runtime).then(() => {
             const stage = this.runtime.getTargetForStage();
             stage.addCostume(backdropObject);
