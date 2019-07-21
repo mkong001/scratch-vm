@@ -40,6 +40,8 @@ class Blocks {
          */
         this._scripts = [];
 
+        this.deleteCounter = 0;
+
         /**
          * Runtime Cache
          * @type {{inputs: {}, procedureParamNames: {}, procedureDefinitions: {}}}
@@ -288,6 +290,7 @@ class Blocks {
         const newBlocks = new Blocks(this.runtime, this.forceNoGlow);
         newBlocks._blocks = Clone.simple(this._blocks);
         newBlocks._scripts = Clone.simple(this._scripts);
+        console.log("vm src engine blocks duplicate is called"); //test logging
         return newBlocks;
     }
     // ---------------------------------------------------------------------
@@ -325,6 +328,9 @@ class Blocks {
             break;
         }
         case 'change':
+            // if (e.value != e.newValue) {
+            //     console.log("vm engine blocks changeBlock is called: " + e.newValue); //test logging
+            // }
             this.changeBlock({
                 id: e.blockId,
                 element: e.element,
@@ -341,7 +347,7 @@ class Blocks {
                 newInput: e.newInputName,
                 newCoordinate: e.newCoordinate
             });
-            //console.log("vm blocks move case is called: "); //test logging
+            //console.log("vm blocks move case is called: " + this._blocks[e.blockId].opcode); //test logging
             break;
         case 'dragOutside':
             this.runtime.emitBlockDragUpdate(e.isOutside);
@@ -353,10 +359,14 @@ class Blocks {
             if (e.isOutside) {
                 const newBlocks = adapter(e);
                 this.runtime.emitBlockEndDrag(newBlocks, e.blockId);
-                console.log("vm engine blocks endDrag drag block onto another sprite"); //test logging
+                console.log("vm engine blocks endDrag drag block onto another sprite: " + this._blocks[e.blockId].opcode); //test logging
             }
-            console.log("vm engine blocks endDrag case is called: " + this._blocks[e.blockId].opcode); //test logging
-            console.log(this._blocks[e.blockId] + " " + this.blockToXML(e.blockId)); //test logging
+            else {
+                console.log("vm engine blocks endDrag case is called: " + this._blocks[e.blockId].opcode); //test logging
+
+            }
+            //console.log(this._blocks[e.blockId] + " " + this.blockToXML(e.blockId)); //test logging
+            console.log(this._blocks[e.blockId] + " " + this.toXML()); //test logging
             break;
         case 'delete':
             // Don't accept delete events for missing blocks,
@@ -369,8 +379,17 @@ class Blocks {
             if (this._blocks[e.blockId].topLevel) {
                 this.runtime.quietGlow(e.blockId);
             }
+            
+            // Logging:
+            // Make sure the block's x-coordinate is one of the 3 coordinates when
+            // threads are running runtime (0, 12, 49). Log otherwise. 
+            const block = this._blocks[e.blockId];
+            if (block.x != 0 && block.x != 12 && block.x != 49) {
+                console.log("vm src engine blocks blocklyListen delete case is called: " + block.opcode); //test logging
+            }
+
             this.deleteBlock(e.blockId);
-            //console.log("vm delete case is called: " + e.blockId); //test logging
+
             break;
         case 'var_create':
             // Check if the variable being created is global or local
@@ -601,6 +620,7 @@ class Blocks {
                     block.fields[args.name].id = args.value;
                     console.log("vm engine block changeBlock is called - variable"); //test logging
                 }
+
             } else {
                 // Changing the value in a dropdown
                 block.fields[args.name].value = args.value;
@@ -615,7 +635,12 @@ class Blocks {
                         this._blocks[block.parent].fields.PROPERTY.value = 'x position';
                     }
                     this.runtime.requestBlocksUpdate();
-                    //console.log("vm engine block changeBlock is called - sensing_of_object_menu"); //test logging
+                    console.log("vm engine block changeBlock is called - sensing_of_object_menu"); //test logging
+                }
+                else {
+                    // Logging:
+                    // Log when the value of a field in a block is being changed
+                    console.log("vm engine block changeBlock is called - field: " + args.value);
                 }
 
                 const flyoutBlock = block.shadow && block.parent ? this._blocks[block.parent] : block;
@@ -624,7 +649,6 @@ class Blocks {
                         id: flyoutBlock.id,
                         params: this._getBlockParams(flyoutBlock)
                     }));
-                    //console.log("vm engine block changeBlock is called - flyoutBlock.isMonitored"); //test logging
                 }
             }
             break;
@@ -741,7 +765,7 @@ class Blocks {
             }
             this._blocks[e.id].parent = null;
             didChange = true;
-            //console.log("vm engine blocks moveBlock is called - remove from any old parent"); //test logging
+            console.log("vm engine blocks moveBlock is called - remove from any old parent: " + block.opcode); //test logging
         }
 
         // Is this block a top-level block?
@@ -776,7 +800,7 @@ class Blocks {
             }
             this._blocks[e.id].parent = e.newParent;
             didChange = true;
-            //console.log("vm engine blocks moveBLock is called - move to the new parent block"); //test logging
+            console.log("vm engine blocks moveBLock is called - move to the new parent block: " + block.opcode); //test logging
         }
         this.resetCache();
 
@@ -850,7 +874,6 @@ class Blocks {
 
         this.resetCache();
         this.emitProjectChanged();
-        //console.log("vm engine blocks deleteBlock is called - block itself is deleted: " + block); //test logging
     }
 
     /**
