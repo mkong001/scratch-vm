@@ -164,6 +164,7 @@ class Sprite {
             return newSound;
         });
 
+        console.log("vm src sprites sprite.js duplicate is called on sprite: " + this.name); //test logging
         return Promise.all(assetPromises).then(() => newSprite);
     }
 

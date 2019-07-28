@@ -170,6 +170,8 @@ class VirtualMachine extends EventEmitter {
      */
     start () {
         this.runtime.start();
+        //console.log("start");
+        // call init script for logging here?
     }
 
     /**
@@ -177,6 +179,7 @@ class VirtualMachine extends EventEmitter {
      */
     greenFlag () {
         this.runtime.greenFlag();
+        console.log("vm src virtual-machine greenFlag is called"); //test logging
     }
 
     /**
@@ -188,8 +191,10 @@ class VirtualMachine extends EventEmitter {
         this.runtime.turboMode = !!turboModeOn;
         if (this.runtime.turboMode) {
             this.emit(Runtime.TURBO_MODE_ON);
+            console.log("vm src virtual-machine setTurboMode: turbo mode is on"); //test logging
         } else {
             this.emit(Runtime.TURBO_MODE_OFF);
+            console.log("vm src virtual-machine setTurboMode: turbo mode is off"); //test logging
         }
     }
 
@@ -338,6 +343,8 @@ class VirtualMachine extends EventEmitter {
                 return Promise.reject(error);
             });
 
+        console.log("vm src virtual-machine loadProject is called"); //test logging
+
         return validationPromise
             .then(validatedInput => this.deserializeProject(validatedInput[0], validatedInput[1]))
             .then(() => this.runtime.emitProjectLoaded())
@@ -383,6 +390,7 @@ class VirtualMachine extends EventEmitter {
         zip.file('project.json', projectJson);
         this._addFileDescsToZip(soundDescs.concat(costumeDescs), zip);
 
+        console.log("vm src virtual-machine saveProjectSb3 is called"); //test logging
         return zip.generateAsync({
             type: 'blob',
             compression: 'DEFLATE',
@@ -433,6 +441,9 @@ class VirtualMachine extends EventEmitter {
         zip.file('sprite.json', spriteJson);
         this._addFileDescsToZip(soundDescs.concat(costumeDescs), zip);
 
+        if (optZipType == null) {
+            console.log("vm src exportSprite is called"); //test logging
+        }
         return zip.generateAsync({
             type: typeof optZipType === 'string' ? optZipType : 'blob',
             compression: 'DEFLATE',
@@ -577,9 +588,11 @@ class VirtualMachine extends EventEmitter {
             .then(validatedInput => {
                 const projectVersion = validatedInput[0].projectVersion;
                 if (projectVersion === 2) {
+                    console.log("vm src virtual-machine addSprite: adding sprite2"); //test logging
                     return this._addSprite2(validatedInput[0], validatedInput[1]);
                 }
                 if (projectVersion === 3) {
+                    console.log("vm src virtual-machine addSprite: adding sprite3"); //test logging
                     return this._addSprite3(validatedInput[0], validatedInput[1]);
                 }
                 return Promise.reject(`${errorPrefix} Unable to verify sprite version.`);
@@ -645,6 +658,7 @@ class VirtualMachine extends EventEmitter {
                     target.getCostumes().length - 1
                 );
                 this.runtime.emitProjectChanged();
+                console.log("vm src virtual-machine addCostume is called"); //test logging
             });
         }
         // If the target cannot be found by id, return a rejected promise
@@ -679,6 +693,7 @@ class VirtualMachine extends EventEmitter {
             this.editingTarget.addCostume(clone, costumeIndex + 1);
             this.editingTarget.setCostume(costumeIndex + 1);
             this.emitTargetsUpdate();
+            console.log("vm src virtual-machine duplicateCostume is called"); //test logging
         });
     }
 
@@ -693,6 +708,7 @@ class VirtualMachine extends EventEmitter {
         return loadSound(clone, this.runtime, this.editingTarget.sprite.soundBank).then(() => {
             this.editingTarget.addSound(clone, soundIndex + 1);
             this.emitTargetsUpdate();
+            console.log("vm src virtual-machine duplicateSound is called"); //test logging
         });
     }
 
@@ -704,6 +720,7 @@ class VirtualMachine extends EventEmitter {
     renameCostume (costumeIndex, newName) {
         this.editingTarget.renameCostume(costumeIndex, newName);
         this.emitTargetsUpdate();
+        console.log("vm src virtual-machine renameCostume is called"); //test logging
     }
 
     /**
@@ -717,6 +734,7 @@ class VirtualMachine extends EventEmitter {
         if (deletedCostume) {
             const target = this.editingTarget;
             this.runtime.emitProjectChanged();
+            console.log("vm src virtual-machine deleteCostume is called"); //test logging
             return () => {
                 target.addCostume(deletedCostume);
                 this.emitTargetsUpdate();
@@ -738,6 +756,7 @@ class VirtualMachine extends EventEmitter {
             return loadSound(soundObject, this.runtime, target.sprite.soundBank).then(() => {
                 target.addSound(soundObject);
                 this.emitTargetsUpdate();
+                console.log("vm src virtual-machine addSound is called"); //test logging
             });
         }
         // If the target cannot be found by id, return a rejected promise
@@ -752,6 +771,7 @@ class VirtualMachine extends EventEmitter {
     renameSound (soundIndex, newName) {
         this.editingTarget.renameSound(soundIndex, newName);
         this.emitTargetsUpdate();
+        console.log("vm src virtual-machine renameSound is called"); //test logging
     }
 
     /**
@@ -823,6 +843,7 @@ class VirtualMachine extends EventEmitter {
                 target.addSound(deletedSound);
                 this.emitTargetsUpdate();
             };
+            console.log("vm src virtual-machine deleteSound is called"); //test logging
             return restoreFun;
         }
         return null;
@@ -939,6 +960,7 @@ class VirtualMachine extends EventEmitter {
         costume.assetId = costume.asset.assetId;
         costume.md5 = `${costume.assetId}.${costume.dataFormat}`;
         this.emitTargetsUpdate();
+        console.log("vm src virtual-machine updateSvg is called"); //test logging
     }
 
     /**
@@ -952,6 +974,7 @@ class VirtualMachine extends EventEmitter {
      * @returns {?Promise} - a promise that resolves when the backdrop has been added
      */
     addBackdrop (md5ext, backdropObject) {
+        console.log("scratch-vm src virtual-machine addBackdrop is called"); //test logging
         return loadCostume(md5ext, backdropObject, this.runtime).then(() => {
             const stage = this.runtime.getTargetForStage();
             stage.addCostume(backdropObject);
@@ -989,6 +1012,7 @@ class VirtualMachine extends EventEmitter {
                 }
 
                 if (newUnusedName !== oldName) this.emitTargetsUpdate();
+                console.log("vm src virtual-machine renameSprite is called"); //test logging
             }
         } else {
             throw new Error('No target with the provided id.');
@@ -1034,6 +1058,7 @@ class VirtualMachine extends EventEmitter {
             }
             // Sprite object should be deleted by GC.
             this.emitTargetsUpdate();
+            console.log("vm src virtual-machine deleteSprite is called"); //test logging
             return restoreSprite;
         }
 
@@ -1055,6 +1080,7 @@ class VirtualMachine extends EventEmitter {
         } else if (!target.sprite) {
             throw new Error('No sprite associated with this target.');
         }
+        console.log("vm src virtual-machine duplicateSprite is called on targetId: " + targetId); //test logging
         return target.duplicate().then(newTarget => {
             this.runtime.addTarget(newTarget);
             newTarget.goBehindOther(target);
@@ -1194,6 +1220,7 @@ class VirtualMachine extends EventEmitter {
             this.emitTargetsUpdate(false /* Don't emit project change */);
             this.emitWorkspaceUpdate();
             this.runtime.setEditingTarget(target);
+            console.log("vm src virtual-machine setEditingTarget is called. Set target to: " + targetId);
         }
     }
 
@@ -1232,6 +1259,11 @@ class VirtualMachine extends EventEmitter {
             id => this.extensionManager.loadExtensionURL(id)
         );
 
+        //console.log("vm src virtual-machin shareBlocksToTarget is called: "); //test logging
+        // blocks.forEach(function(entry) {
+        //     console.log(entry.opcode); //test logging
+        // })
+
         return Promise.all(extensionPromises).then(() => {
             copiedBlocks.forEach(block => {
                 target.blocks.createBlock(block);
@@ -1251,6 +1283,7 @@ class VirtualMachine extends EventEmitter {
         const originalCostume = this.editingTarget.getCostumes()[costumeIndex];
         const clone = Object.assign({}, originalCostume);
         const md5ext = `${clone.assetId}.${clone.dataFormat}`;
+        console.log("vm src virtual-machine shareCostumeToTarget is called"); //test logging
         return loadCostume(md5ext, clone, this.runtime).then(() => {
             const target = this.runtime.getTargetById(targetId);
             if (target) {
@@ -1272,6 +1305,7 @@ class VirtualMachine extends EventEmitter {
         const originalSound = this.editingTarget.getSounds()[soundIndex];
         const clone = Object.assign({}, originalSound);
         const target = this.runtime.getTargetById(targetId);
+        console.log("vm src virtual-machine shareSoundToTarget is called"); //test logging
         return loadSound(clone, this.runtime, target.sprite.soundBank).then(() => {
             if (target) {
                 target.addSound(clone);
@@ -1405,6 +1439,7 @@ class VirtualMachine extends EventEmitter {
         targets.splice(newIndex, 0, target);
         this.runtime.targets = targets;
         this.emitTargetsUpdate();
+        console.log("vm src virtual-machine reorderTarget is called"); //test logging
         return true;
     }
 
@@ -1422,6 +1457,7 @@ class VirtualMachine extends EventEmitter {
             if (reorderSuccessful) {
                 this.runtime.emitProjectChanged();
             }
+            console.log("vm src virtual-machine reorderCostume is called"); //test logging
             return reorderSuccessful;
         }
         return false;
@@ -1441,6 +1477,7 @@ class VirtualMachine extends EventEmitter {
             if (reorderSuccessful) {
                 this.runtime.emitProjectChanged();
             }
+            console.log("vm src virtual-machine reorderSound is called"); //test logging
             return reorderSuccessful;
         }
         return false;
@@ -1470,6 +1507,7 @@ class VirtualMachine extends EventEmitter {
             target.stopDrag();
             this.setEditingTarget(target.sprite && target.sprite.clones[0] ?
                 target.sprite.clones[0].id : target.id);
+            console.log("vm src virtual-machine stopDrag is called"); //test logging
         }
     }
 
@@ -1499,6 +1537,9 @@ class VirtualMachine extends EventEmitter {
      */
     setVariableValue (targetId, variableId, value) {
         const target = this.runtime.getTargetById(targetId);
+        //console.log(variableId + " " + value);
+        //console.log("vm src virtual-machine setVariableValue is called"); //test logging
+
         if (target) {
             const variable = target.lookupVariableById(variableId);
             if (variable) {
@@ -1508,6 +1549,7 @@ class VirtualMachine extends EventEmitter {
                     this.runtime.ioDevices.cloud.requestUpdateVariable(variable.name, variable.value);
                 }
 
+                console.log("vm src virtual-machine setVariableValue is called"); //test logging
                 return true;
             }
         }
