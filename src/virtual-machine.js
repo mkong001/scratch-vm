@@ -19,6 +19,10 @@ const formatMessage = require('format-message');
 
 const Variable = require('./engine/variable');
 const newBlockIds = require('./util/new-block-ids');
+// const blocks = require('./engine/blocks');
+// import blocks from './engine/blocks';
+const uuidv1 = require('uuid/v1');
+const logging = require('./logging');
 
 const {loadCostume} = require('./import/load-costume.js');
 const {loadSound} = require('./import/load-sound.js');
@@ -26,6 +30,7 @@ const {serializeSounds, serializeCostumes} = require('./serialization/serialize-
 require('canvas-toBlob');
 
 const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
+// const toolInstance = "Scratch 3.0, MySQL";
 
 const CORE_EXTENSIONS = [
     // 'motion',
@@ -170,8 +175,20 @@ class VirtualMachine extends EventEmitter {
      */
     start () {
         this.runtime.start();
-        //console.log("start");
-        // call init script for logging here?
+
+        var codeStateID = uuidv1();
+        var mainJSONObject = {
+            "eventType": "File.Open",
+            "codeStateID": codeStateID,
+            "editType": null
+        };
+        var codeJSONObject = {
+            "codeStateID": codeStateID,
+            "code": null
+        };
+        logging.postMain(mainJSONObject);
+        logging.postMetadata();
+        logging.postCodeState(codeJSONObject);
     }
 
     /**
@@ -180,6 +197,18 @@ class VirtualMachine extends EventEmitter {
     greenFlag () {
         this.runtime.greenFlag();
         console.log("vm src virtual-machine greenFlag is called"); //test logging
+        var codeStateID = uuidv1();
+        var mainJSONObject = {
+            "eventType": "Run.Program",
+            "codeStateID": codeStateID,
+            "editType": null
+        };
+        var codeJSONObject = {
+            "codeStateID": codeStateID,
+            "code": null
+        };
+        logging.postMain(mainJSONObject);
+        logging.postCodeState(codeJSONObject);
     }
 
     /**
@@ -192,9 +221,33 @@ class VirtualMachine extends EventEmitter {
         if (this.runtime.turboMode) {
             this.emit(Runtime.TURBO_MODE_ON);
             console.log("vm src virtual-machine setTurboMode: turbo mode is on"); //test logging
+            var codeStateID = uuidv1();
+            var mainJSONObject = {
+                "eventType": "X-Turbo.On",
+                "codeStateID": codeStateID,
+                "editType": null
+            };
+            var codeJSONObject = {
+                "codeStateID": codeStateID,
+                "code": null
+            };
+            logging.postMain(mainJSONObject);
+            logging.postCodeState(codeJSONObject);
         } else {
             this.emit(Runtime.TURBO_MODE_OFF);
             console.log("vm src virtual-machine setTurboMode: turbo mode is off"); //test logging
+            var codeStateID = uuidv1();
+            var mainJSONObject = {
+                "eventType": "X-Turbo.Off",
+                "codeStateID": codeStateID,
+                "editType": null
+            };
+            var codeJSONObject = {
+                "codeStateID": codeStateID,
+                "code": null
+            };
+            logging.postMain(mainJSONObject);
+            logging.postCodeState(codeJSONObject);
         }
     }
 
@@ -344,6 +397,18 @@ class VirtualMachine extends EventEmitter {
             });
 
         console.log("vm src virtual-machine loadProject is called"); //test logging
+        var codeStateID = uuidv1();
+        var mainJSONObject = {
+            "eventType": "File.Open",
+            "codeStateID": codeStateID,
+            "editType": null
+        };
+        var codeJSONObject = {
+            "codeStateID": codeStateID,
+            "code": null
+        };
+        logging.postMain(mainJSONObject);
+        logging.postCodeState(codeJSONObject);
 
         return validationPromise
             .then(validatedInput => this.deserializeProject(validatedInput[0], validatedInput[1]))
@@ -391,6 +456,19 @@ class VirtualMachine extends EventEmitter {
         this._addFileDescsToZip(soundDescs.concat(costumeDescs), zip);
 
         console.log("vm src virtual-machine saveProjectSb3 is called"); //test logging
+        var codeStateID = uuidv1();
+        var mainJSONObject = {
+            "eventType": "X-File.Save",
+            "codeStateID": codeStateID,
+            "editType": null
+        };
+        var codeJSONObject = {
+            "codeStateID": codeStateID,
+            "code": null
+        };
+        logging.postMain(mainJSONObject);
+        logging.postCodeState(codeJSONObject);
+        
         return zip.generateAsync({
             type: 'blob',
             compression: 'DEFLATE',
@@ -1221,6 +1299,18 @@ class VirtualMachine extends EventEmitter {
             this.emitWorkspaceUpdate();
             this.runtime.setEditingTarget(target);
             console.log("vm src virtual-machine setEditingTarget is called. Set target to: " + targetId);
+            var codeStateID = uuidv1();
+            var mainJSONObject = {
+                "eventType": "X-Target.Set",
+                "codeStateID": codeStateID,
+                "editType": null
+            };
+            var codeJSONObject = {
+                "codeStateID": codeStateID,
+                "code": null
+            };
+            logging.postMain(mainJSONObject);
+            logging.postCodeState(codeJSONObject);
         }
     }
 
