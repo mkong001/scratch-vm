@@ -9,6 +9,9 @@ const BlocksRuntimeCache = require('./blocks-runtime-cache');
 const log = require('../util/log');
 const Variable = require('./variable');
 const getMonitorIdForBlockWithArgs = require('../util/get-monitor-id');
+// const virtualMachine = require('../virtual-machine');
+const uuidv1 = require('uuid/v1');
+const logging = require('../logging');
 
 /**
  * @fileoverview
@@ -360,10 +363,33 @@ class Blocks {
                 const newBlocks = adapter(e);
                 this.runtime.emitBlockEndDrag(newBlocks, e.blockId);
                 console.log("vm engine blocks endDrag drag block onto another sprite: " + this._blocks[e.blockId].opcode); //test logging
+                var codeStateID = uuidv1();
+                    var mainJSONObject = {
+                        "eventType": "File.Edit",
+                        "codeStateID": codeStateID,
+                        "editType": "X-Block.Share"
+                    };
+                    var codeJSONObject = {
+                        "codeStateID": codeStateID,
+                        "code": this.toXML()
+                    };
+                    logging.postMain(mainJSONObject);
+                    logging.postCodeState(codeJSONObject);
             }
             else {
                 console.log("vm engine blocks endDrag case is called: " + this._blocks[e.blockId].opcode); //test logging
-
+                var codeStateID = uuidv1();
+                var mainJSONObject = {
+                    "eventType": "File.Edit",
+                    "codeStateID": codeStateID,
+                    "editType": "Move"
+                };
+                var codeJSONObject = {
+                    "codeStateID": codeStateID,
+                    "code": this.toXML()
+                };
+                logging.postMain(mainJSONObject);
+                logging.postCodeState(codeJSONObject);
             }
             //console.log(this._blocks[e.blockId] + " " + this.blockToXML(e.blockId)); //test logging
             console.log(this._blocks[e.blockId] + " " + this.toXML()); //test logging
@@ -386,6 +412,18 @@ class Blocks {
             const block = this._blocks[e.blockId];
             if (block.x != 0 && block.x != 12 && block.x != 49) {
                 console.log("vm src engine blocks blocklyListen delete case is called: " + block.opcode); //test logging
+                var codeStateID = uuidv1();
+                    var mainJSONObject = {
+                        "eventType": "File.Edit",
+                        "codeStateID": codeStateID,
+                        "editType": "Delete"
+                    };
+                    var codeJSONObject = {
+                        "codeStateID": codeStateID,
+                        "code": this.toXML()
+                    };
+                    logging.postMain(mainJSONObject);
+                    logging.postCodeState(codeJSONObject);
             }
 
             this.deleteBlock(e.blockId);
@@ -420,6 +458,18 @@ class Blocks {
                 this.emitProjectChanged();
             }
             console.log("vm engine blocks var_create is called: " + e.varName); //test logging
+            var codeStateID = uuidv1();
+            var mainJSONObject = {
+                "eventType": "File.Edit",
+                "codeStateID": codeStateID,
+                "editType": "X-Var.Create"
+            };
+            var codeJSONObject = {
+                "codeStateID": codeStateID,
+                "code": this.toXML()
+            };
+            logging.postMain(mainJSONObject);
+            logging.postCodeState(codeJSONObject);
             break;
         case 'var_rename':
             if (editingTarget && editingTarget.variables.hasOwnProperty(e.varId)) {
@@ -440,6 +490,18 @@ class Blocks {
             }
             this.emitProjectChanged();
             console.log("vm engine blocks var_rename is called: " + e.newName); //test logging
+            var codeStateID = uuidv1();
+            var mainJSONObject = {
+                "eventType": "File.Edit",
+                "codeStateID": codeStateID,
+                "editType": "X-Var.Rename"
+            };
+            var codeJSONObject = {
+                "codeStateID": codeStateID,
+                "code": this.toXML()
+            };
+            logging.postMain(mainJSONObject);
+            logging.postCodeState(codeJSONObject);
             break;
         case 'var_delete': {
             const target = (editingTarget && editingTarget.variables.hasOwnProperty(e.varId)) ?
@@ -447,6 +509,18 @@ class Blocks {
             target.deleteVariable(e.varId);
             this.emitProjectChanged();
             console.log("vm engine blocks var_delete is called: " + e.varName); //test logging
+            var codeStateID = uuidv1();
+            var mainJSONObject = {
+                "eventType": "File.Edit",
+                "codeStateID": codeStateID,
+                "editType": "X-Var.Delete"
+            };
+            var codeJSONObject = {
+                "codeStateID": codeStateID,
+                "code": this.toXML()
+            };
+            logging.postMain(mainJSONObject);
+            logging.postCodeState(codeJSONObject);
             break;
         }
         case 'comment_create':
@@ -619,6 +693,19 @@ class Blocks {
                     block.fields[args.name].value = variable.name;
                     block.fields[args.name].id = args.value;
                     console.log("vm engine block changeBlock is called - variable"); //test logging
+                    
+                    var codeStateID = uuidv1();
+                    var mainJSONObject = {
+                        "eventType": "File.Edit",
+                        "codeStateID": codeStateID,
+                        "editType": "X-Block.Change"
+                    };
+                    var codeJSONObject = {
+                        "codeStateID": codeStateID,
+                        "code": this.toXML()
+                    };
+                    logging.postMain(mainJSONObject);
+                    logging.postCodeState(codeJSONObject);
                 }
 
             } else {
@@ -636,6 +723,18 @@ class Blocks {
                     }
                     this.runtime.requestBlocksUpdate();
                     console.log("vm engine block changeBlock is called - sensing_of_object_menu"); //test logging
+                    var codeStateID = uuidv1();
+                    var mainJSONObject = {
+                        "eventType": "File.Edit",
+                        "codeStateID": codeStateID,
+                        "editType": "X-Block.Change"
+                    };
+                    var codeJSONObject = {
+                        "codeStateID": codeStateID,
+                        "code": this.toXML()
+                    };
+                    logging.postMain(mainJSONObject);
+                    logging.postCodeState(codeJSONObject);
                 }
                 else {
                     // Logging:
@@ -1305,4 +1404,6 @@ BlocksRuntimeCache.getScripts = function (blocks, opcode) {
     return scripts;
 };
 
+
+// module.exports = {Blocks, toXML};
 module.exports = Blocks;
